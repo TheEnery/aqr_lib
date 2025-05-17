@@ -1,4 +1,4 @@
-library aqr_lib;
+library;
 
 /// A Calculator.
 class Calculator {

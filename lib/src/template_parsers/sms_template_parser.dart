@@ -1,0 +1,103 @@
+/*
+ * Copyright 2008 ZXing authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import '../templates/sms_template.dart';
+import '../core/template_parser.dart';
+
+/// Parses an "sms:" URI result, which specifies a number to SMS.
+///
+/// See <a href="http://tools.ietf.org/html/rfc5724"> RFC 5724</a> on this.
+///
+/// This class supports "via" syntax for numbers, which is not part of the spec.
+/// For example "+12125551212;via=+12124440101" may appear as a number.
+/// It also supports a "subject" query parameter, which is not mentioned in the spec.
+/// These are included since they were mentioned in earlier IETF drafts and might be
+/// used.
+///
+/// This actually also parses URIs starting with "mms:" and treats them all the same way,
+/// and effectively converts them to an "sms:" URI for purposes of forwarding to the platform.
+///
+/// @author Sean Owen
+class SmsTemplateParser extends TemplateParser<SmsTemplate> {
+  const SmsTemplateParser();
+  @override
+  SmsTemplate? parse(String rawText) {
+    if (!(rawText.startsWith('sms:') ||
+        rawText.startsWith('SMS:') ||
+        rawText.startsWith('mms:') ||
+        rawText.startsWith('MMS:'))) {
+      return null;
+    }
+
+    // Check up front if this is a URI syntax string with query arguments
+    final nameValuePairs = parseNameValuePairs(rawText);
+    String? subject;
+    String? body;
+    bool querySyntax = false;
+    if (nameValuePairs != null && nameValuePairs.isNotEmpty) {
+      subject = nameValuePairs['subject'];
+      body = nameValuePairs['body'];
+      querySyntax = true;
+    }
+
+    // Drop sms, query portion
+    final queryStart = rawText.indexOf('?', 4);
+    String smsURIWithoutQuery;
+    // If it's not query syntax, the question mark is part of the subject or message
+    if (queryStart < 0 || !querySyntax) {
+      smsURIWithoutQuery = rawText.substring(4);
+    } else {
+      smsURIWithoutQuery = rawText.substring(4, queryStart);
+    }
+
+    int lastComma = -1;
+    int comma;
+    final numbers = <String>[];
+    final vias = <String>[];
+    while (
+        (comma = smsURIWithoutQuery.indexOf(',', lastComma + 1)) > lastComma) {
+      final numberPart = smsURIWithoutQuery.substring(lastComma + 1, comma);
+      _addNumberVia(numbers, vias, numberPart);
+      lastComma = comma;
+    }
+    _addNumberVia(numbers, vias, smsURIWithoutQuery.substring(lastComma + 1));
+
+    return SmsTemplate(numbers.toList(), vias.toList(), subject, body);
+  }
+
+  static void _addNumberVia(
+    List<String> numbers,
+    List<String> vias,
+    String numberPart,
+  ) {
+    final numberEnd = numberPart.indexOf(';');
+    if (numberEnd < 0) {
+      numbers.add(numberPart);
+      //vias.add(''); //todo null
+    } else {
+      numbers.add(numberPart.substring(0, numberEnd));
+      final maybeVia = numberPart.substring(numberEnd + 1);
+      String via;
+      if (maybeVia.startsWith('via=')) {
+        via = maybeVia.substring(4);
+        vias.add(via);
+      } //else {
+      //  via = ''; //todo null
+      //}
+      //vias.add(via);
+    }
+  }
+}

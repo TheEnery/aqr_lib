@@ -1,0 +1,69 @@
+/*
+ * Copyright 2008 ZXing authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import '../templates/geolocation_template.dart';
+import '../core/template_parser.dart';
+
+/// Parses a "geo:" URI result, which specifies a location on the surface of
+/// the Earth as well as an optional altitude above the surface. See
+/// <a href="http://tools.ietf.org/html/draft-mayrhofer-geo-uri-00">
+/// http://tools.ietf.org/html/draft-mayrhofer-geo-uri-00</a>.
+///
+/// @author Sean Owen
+class GeolocationTemplateParser extends TemplateParser<GeolocationTemplate> {
+  const GeolocationTemplateParser();
+
+  static final _geoUrlPattern = RegExp(
+    r'^geo:([\-0-9.]+),([\-0-9.]+)(?:,([\-0-9.]+))?(?:\?(.*))?$',
+    caseSensitive: false,
+  );
+
+  @override
+  GeolocationTemplate? parse(String rawText) {
+    final matcher = _geoUrlPattern.firstMatch(rawText);
+    if (matcher == null) {
+      return null;
+    }
+
+    final query = matcher.group(4);
+
+    double latitude;
+    double longitude;
+    double altitude;
+    try {
+      latitude = double.parse(matcher.group(1)!);
+      if (latitude > 90.0 || latitude < -90.0) {
+        return null;
+      }
+      longitude = double.parse(matcher.group(2)!);
+      if (longitude > 180.0 || longitude < -180.0) {
+        return null;
+      }
+      if (matcher.group(3) == null) {
+        altitude = 0.0;
+      } else {
+        altitude = double.parse(matcher.group(3)!);
+        if (altitude < 0.0) {
+          return null;
+        }
+      }
+    } catch (_) {
+      //on NumberFormatException
+      return null;
+    }
+    return GeolocationTemplate(latitude, longitude, altitude, query);
+  }
+}
