@@ -1,3 +1,5 @@
+import 'package:image/image.dart';
+
 import 'byte4_matrix.dart';
 
 /// Internal representation of images.
@@ -16,6 +18,23 @@ class LrgbMatrix extends Byte4Matrix {
   static const double gamma = 2.4;
 
   LrgbMatrix({required super.height, required super.width});
+
+  factory LrgbMatrix.fromImage(Image image) {
+    final matrix = LrgbMatrix(height: image.height, width: image.width);
+
+    for (int x = 0; x < image.width; x++) {
+      final column = matrix[x];
+      for (int y = 0; y < image.height; y++) {
+        final p = image.getPixel(x, y);
+        column[y] = (p.luminance.toInt() << 0) |
+            (p.r.toInt() << 8) |
+            (p.g.toInt() << 16) |
+            (p.b.toInt() << 24);
+      }
+    }
+
+    return matrix;
+  }
 
   // factory LrgbMatrix.fromCameraImage(CameraImage cameraImage) {
   //   if (cameraImage.format.group != ImageFormatGroup.yuv420) {

@@ -20,13 +20,12 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:image/image.dart';
 
-import 'package:aqr_lib/src/decoder/decoder_debug_info.dart';
-
 import '../core/bit_writer.dart';
 import '../core/byte4_matrix.dart';
 import '../core/byte_matrix.dart';
 import '../core/compression.dart';
 import '../core/dec_block_pair.dart';
+import '../decoder/decoder_debug_info.dart';
 import '../decolorizer/unmap.dart';
 import '../detector/detector.dart';
 import '../detector/global_histogram_binarizer.dart';
@@ -433,6 +432,8 @@ class Decoder {
             }
           }
         }
+
+        debugInfo.errorImage = errorImg;
       }
     }
 
