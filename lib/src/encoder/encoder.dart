@@ -17,6 +17,8 @@
 
 import 'dart:typed_data';
 
+import 'package:aqr_lib/src/encoder/segment.dart';
+
 import '../core/aqr_code.dart';
 import '../core/aqr_meta.dart';
 import '../core/bit_writer.dart';
@@ -33,6 +35,28 @@ import 'mask_penalty_calculator.dart';
 class Encoder {
   late AqrMeta meta;
   late Version version;
+
+  AqrCode encodeSegments({required List<Segment> data, required AqrMeta meta}) {
+    this.meta = meta;
+
+    final constructor = CodewordsConstructor.fromSegments(data);
+
+    version = chooseVersion(constructor);
+
+    final codewords = constructor.makeCodewords(version);
+
+    final interleaved = interleaveWithEcBytes(codewords);
+
+    final finalBits = BitWriter.from(interleaved);
+
+    final builder = MatrixBuilder(version: version);
+
+    final mask = meta.mask ?? chooseMask(finalBits, builder);
+
+    builder.buildMatrix(data: finalBits.reader, mask: mask);
+
+    return AqrCode(data: builder.matrix, meta: meta);
+  }
 
   AqrCode encode({required String data, required AqrMeta meta}) {
     this.meta = meta;

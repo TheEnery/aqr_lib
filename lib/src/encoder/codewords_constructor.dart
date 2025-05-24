@@ -18,6 +18,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:aqr_lib/src/encoder/segment.dart';
+
 import '../core/bit_writer.dart';
 import '../core/mode.dart';
 import '../core/string_utils.dart';
@@ -25,10 +27,13 @@ import '../core/version.dart';
 import '../exceptions/writer_exception.dart';
 
 class CodewordsConstructor {
-  final List<_Segment> _segments = [];
+  final List<Segment> _segments;
+
+  CodewordsConstructor() : _segments = <Segment>[];
+  CodewordsConstructor.fromSegments(this._segments);
 
   void addContent(String content) {
-    _segments.add(_Segment(content: content, mode: chooseMode(content)));
+    _segments.add(Segment(content: content, mode: chooseMode(content)));
   }
 
   int calculateDataSize(Version version) {
@@ -236,38 +241,6 @@ class CodewordsConstructor {
     final paddingByteCount = dByteCount - bits.lengthInBytes;
     for (int i = 0; i < paddingByteCount; i++) {
       bits.addInt((i & 0x1) == 0 ? 0xEC : 0x11, 8);
-    }
-  }
-}
-
-class _Segment {
-  final String content;
-  final Mode mode;
-
-  _Segment({required this.content, required this.mode});
-
-  int get characterCount => content.length;
-
-  /// Returns length in bits. See ISO 18004:2015, 7.4.3 - 7.4.6
-  int calculateLength(Version version) {
-    // Mode indicator length.
-    final M = 4;
-    // Number of bits in character count indicator.
-    final C = mode.getCharacterCountBitLength(version);
-    // Number of input data characters.
-    final D = characterCount;
-
-    switch (mode) {
-      case Mode.numeric:
-        return M + C + 10 * (D ~/ 3) + (const [0, 4, 7])[D % 3];
-      case Mode.alphanumeric:
-        return M + C + 11 * (D ~/ 2) + 6 * (D % 2);
-      case Mode.byte:
-        return M + C + 8 * D;
-      case Mode.kanji:
-        return M + C + 13 * D;
-      default:
-        throw StateError('${mode.bits} mode cannot be used in a segment');
     }
   }
 }
