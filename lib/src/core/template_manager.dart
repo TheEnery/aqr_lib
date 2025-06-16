@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
+import 'package:aqr_lib/template_parsers.dart';
+
 import 'template.dart';
 import 'template_parser.dart';
 
 class TemplateManager {
-  static List<TemplateParser> allParsers = [];
+  static const List<TemplateParser> allParsers = [
+    CalendarEventTemplateParser(),
+    ContactInfoTemplateParser(),
+    EmailTemplateParser(),
+    GeolocationTemplateParser(),
+    PhoneNumberTemplateParser(),
+    SmsTemplateParser(),
+    UrlTemplateParser(),
+    WifiTemplateParser(),
+  ];
 
   List<TemplateParser> parsers = List.from(allParsers);
 

@@ -41,7 +41,8 @@ class Segment {
       case Mode.alphanumeric:
         return M + C + 11 * (D ~/ 2) + 6 * (D % 2);
       case Mode.byte:
-        return M + C + 8 * D;
+        // TODO: remove this workaround
+        return M + C + 8 * D /* String character needs 2 byte */ * 2;
       case Mode.kanji:
         return M + C + 13 * D;
       default:
