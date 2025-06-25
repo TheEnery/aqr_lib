@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import '../templates/geolocation_template.dart';
 import '../core/template_parser.dart';
+import '../templates/geolocation_template.dart';
 
 /// Parses a "geo:" URI result, which specifies a location on the surface of
 /// the Earth as well as an optional altitude above the surface. See
@@ -27,7 +27,7 @@ class GeolocationTemplateParser extends TemplateParser<GeolocationTemplate> {
   const GeolocationTemplateParser();
 
   static final _geoUrlPattern = RegExp(
-    r'^geo:([\-0-9.]+),([\-0-9.]+)(?:,([\-0-9.]+))?(?:\?(.*))?$',
+    r'^GEO:([\-0-9.]+),([\-0-9.]+)(?:,([\-0-9.]+))?(?:\?(.*))?$',
     caseSensitive: false,
   );
 

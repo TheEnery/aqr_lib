@@ -40,9 +40,10 @@ class GeolocationTemplate extends Template {
     this.query,
   ]);
 
-  String get geoURI {
+  @override
+  String get displayResult {
     final result = StringBuffer();
-    result.write('geo:');
+    result.write('GEO:');
     result.write(latitude);
     result.write(',');
     result.write(longitude);
@@ -53,25 +54,6 @@ class GeolocationTemplate extends Template {
     if (query != null) {
       result.write('?');
       result.write(query);
-    }
-    return result.toString();
-  }
-
-  @override
-  String get displayResult {
-    final result = StringBuffer();
-    result.write(latitude);
-    result.write(', ');
-    result.write(longitude);
-    if (altitude > 0.0) {
-      result.write(', ');
-      result.write(altitude);
-      result.write('m');
-    }
-    if (query != null) {
-      result.write(' (');
-      result.write(query);
-      result.write(')');
     }
     return result.toString();
   }

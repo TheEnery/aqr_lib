@@ -42,7 +42,12 @@ class SmsTemplate extends Template {
     }
   }
 
-  String get smsURI {
+  List<String> get numbers => _numbers;
+
+  List<String>? get vias => _vias;
+
+  @override
+  String get displayResult {
     final result = StringBuffer();
     result.write('sms:');
     bool first = true;
@@ -74,19 +79,6 @@ class SmsTemplate extends Template {
         result.write(subject);
       }
     }
-    return result.toString();
-  }
-
-  List<String> get numbers => _numbers;
-
-  List<String>? get vias => _vias;
-
-  @override
-  String get displayResult {
-    final result = StringBuffer();
-    maybeAppendList(_numbers, result);
-    maybeAppend(subject, result);
-    maybeAppend(body, result);
     return result.toString();
   }
 }
